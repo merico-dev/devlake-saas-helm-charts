@@ -1,0 +1,103 @@
+# Default values for oauth2-proxy.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: quay.io/oauth2-proxy/oauth2-proxy
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# environment variables to be used for oauth2 proxy
+# non-sensitive key/values only
+# see examples below, and see oauth2 config official documentation for more detail
+envVars:
+  # OAUTH2_PROXY_PROVIDER: "oidc"
+  # OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "AWS Cognito"
+  # OAUTH2_PROXY_COOKIE_DOMAINS: "demo.devlake.pro"
+  # OAUTH2_PROXY_COOKIE_SECURE: "false"
+  # OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+  # OAUTH2_PROXY_UPSTREAMS: "http://demo-devlake-ui.demo:4000"
+  # OAUTH2_PROXY_HTTP_ADDRESS: "http://0.0.0.0:4180"
+  # OAUTH2_PROXY_REVERSE_PROXY: "true"
+  # OAUTH2_PROXY_SKIP_AUTH_ROUTES: "^/grafana.*"
+
+# the name of the secret containing key/value pairs to be used as env vars for oauth2 proxy
+# this helm chart DOES NOT create the secret itself, so that your values file doesn't have to contain any sensitive information
+# consider using external-secrets (or something to that effect) to manage secrets outside of this helm chart
+# for example, you can put sensitive information like OAUTH2_PROXY_CLIENT_ID, OAUTH2_PROXY_CLIENT_SECRET, etc., into a secrets manager,
+# and use external-secrets to sync them into a K8s secret named "oauth2-proxy-secrets", and put the name below
+envFromSecretName: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
