@@ -1,0 +1,16 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: oauth2-proxy-config
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: clustersecretstore-aws
+    kind: ClusterSecretStore
+  target:
+    name: oauth2-proxy-config
+    creationPolicy: Owner
+  dataFrom:
+    - extract:
+        key:  "devlake/saas/demo/oauth2-proxy"
+
