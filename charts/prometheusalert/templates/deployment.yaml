@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "prometheusalert.fullname" . }}
+  labels:
+{{ include "prometheusalert.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "prometheusalert.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "prometheusalert.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{ toYaml .Values.global.imagePullSecrets | indent 0}}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ['sh', '-c', "sqlite3 /app/db/PrometheusAlertDB.db '.read /app/db/init.sql' && /app/PrometheusAlert"]
+          env:
+          - name: TZ
+            value: "Asia/Shanghai"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          {{- if or .Values.config.user_csv .Values.config.init_sql (or .Values.config.app_conf (not .Values.config.autoCreateSecret)) }}
+          volumeMounts:
+          {{- if or .Values.config.app_conf (not .Values.config.autoCreateSecret) }}
+          - name: app-conf
+            mountPath: /app/conf
+          {{- end }}
+          {{- if .Values.config.user_csv }}
+          - name: prometheus-alert-center-conf
+            mountPath: /app/user.csv
+            subPath: user.csv
+          {{- end }}
+          {{- if .Values.config.init_sql }}
+          - name: prometheus-alert-center-conf
+            mountPath: /app/db/init.sql
+            subPath: init.sql
+          {{- end }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      {{- if or .Values.config.user_csv .Values.config.init_sql (or .Values.config.app_conf (not .Values.config.autoCreateSecret)) }}
+      volumes:
+      - name: prometheus-alert-center-conf
+        configMap:
+          name: {{ template "prometheusalert.fullname" . }}
+          items:
+          {{- if .Values.config.user_csv }}
+          - key: user.csv
+            path: user.csv
+          {{- end }}
+          {{- if .Values.config.init_sql }}
+          - key: init.sql
+            path: init.sql
+          {{- end }}
+      {{- if or .Values.config.app_conf (not .Values.config.autoCreateSecret) }}
+      - name: app-conf
+        secret:
+          secretName: {{ include "prometheusalert.appconf.secret" . }}
+      {{- end }}
+      {{- end }}
