@@ -19,4 +19,4 @@ name: prometheusalert
 sources:
 - https://github.com/feiyu563/PrometheusAlert
 type: application
-version: 0.1.0
+version: 1.0.5
