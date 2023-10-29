@@ -1,0 +1,32 @@
+{{- if and .Values.ingress.enabled (eq "apisix" .Values.ingress.className) -}}
+{{- $fullName := include "oauth2-proxy.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "oauth2-proxy.labels" . | nindent 4 }}
+spec:
+  http:
+    {{- range .Values.ingress.hosts }}
+    {{- $host := .host }}
+    {{- $routeName := .name | default $fullName }}
+    {{- $plugins := .plugins }}
+    - backends:
+        - serviceName: {{ $fullName }}
+          servicePort: {{ $svcPort }}
+      match:
+        hosts:
+          - {{ $host }}
+        paths:
+          {{- range .pathsMatch }}
+          - {{ . }}
+          {{- end }}
+      name: {{ $routeName }}
+      {{- with .plugins }}
+      plugins:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+    {{- end }}
+{{- end }}

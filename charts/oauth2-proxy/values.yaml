@@ -65,17 +65,33 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  tls: []
+#    - secretName: chart-example-tls
+#      hosts:
+#        - chart-example.local
   hosts:
     - host: chart-example.local
       paths:
         - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+          pathType: Prefix
+      pathsMatch:
+        - /*
+      plugins: []
+#        - name: http-logger
+#          enable: true
+#          config:
+#            include_req_body: true
+#            include_resp_body: true
+#            uri: http://xxx
+#        - name: prometheus
+#          enable: true
+#          config:
+#            prefer_name: true
+#        - name: ip-restriction
+#          enable: true
+#          config:
+#            blacklist:
+#              - x.x.x.x
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
