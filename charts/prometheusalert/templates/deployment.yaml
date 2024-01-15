@@ -24,7 +24,7 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ['sh', '-c', "sqlite3 /app/db/PrometheusAlertDB.db '.read /app/init.sql' && /app/PrometheusAlert"]
+          command: ['sh', '-c', "sqlite3 /app/db/PrometheusAlertDB.db '.read /app/db/init.sql' && /app/PrometheusAlert"]
           env:
           - name: TZ
             value: "Asia/Shanghai"
@@ -39,16 +39,12 @@ spec:
           - name: db
             mountPath: /app/db
           {{- end }}
-          {{- if .Values.config.user_csv }}
           - name: prometheus-alert-center-conf
             mountPath: /app/user.csv
             subPath: user.csv
-          {{- end }}
-          {{- if .Values.config.init_sql }}
           - name: prometheus-alert-center-conf
-            mountPath: /app/init.sql
+            mountPath: /app/db/init.sql
             subPath: init.sql
-          {{- end }}
           livenessProbe:
             httpGet:
               path: /health
@@ -82,20 +78,14 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-        {{- if or .Values.config.user_csv .Values.config.init_sql }}
         - name: prometheus-alert-center-conf
           configMap:
             name: {{ template "prometheusalert.fullname" . }}
             items:
-              {{- if .Values.config.user_csv }}
               - key: user.csv
                 path: user.csv
-              {{- end }}
-              {{- if .Values.config.init_sql }}
               - key: init.sql
                 path: init.sql
-              {{- end }}
-        {{- end }}
         - name: app-conf
           secret:
             secretName: {{ include "prometheusalert.appconf.secret" . }}

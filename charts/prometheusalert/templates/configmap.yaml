@@ -1,4 +1,3 @@
-{{- if or .Values.config.user_csv .Values.config.init_sql }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,13 +5,7 @@ metadata:
 {{ include "prometheusalert.labels" . | indent 4 }}
   name: {{ template "prometheusalert.fullname" . }}
 data:
-{{- if .Values.config.init_sql }}
   init.sql: |
 {{ .Values.config.init_sql | indent 4 }}
-{{- end -}}
-
-{{- if .Values.config.user_csv }}
   user.csv: |
 {{ .Values.config.user_csv | indent 4 }}
-{{- end -}}
-{{- end }}
