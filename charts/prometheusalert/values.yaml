@@ -45,6 +45,15 @@ tolerations: []
 
 affinity: {}
 
+persistence:
+  # can be enabled when db type is sqlite3
+  enabled: false
+  # storageClassName: default
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  # selectorLabels: {}
+
 config:
   #secret name for app conf
   appConfSecretName: ""

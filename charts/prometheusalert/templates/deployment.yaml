@@ -32,11 +32,12 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
-          {{- if or .Values.config.user_csv .Values.config.init_sql (or .Values.config.app_conf (not .Values.config.autoCreateSecret)) }}
           volumeMounts:
-          {{- if or .Values.config.app_conf (not .Values.config.autoCreateSecret) }}
           - name: app-conf
             mountPath: /app/conf
+          {{- if .Values.persistence.enabled }}
+          - name: db
+            mountPath: /app/db
           {{- end }}
           {{- if .Values.config.user_csv }}
           - name: prometheus-alert-center-conf
@@ -47,7 +48,6 @@ spec:
           - name: prometheus-alert-center-conf
             mountPath: /app/db/init.sql
             subPath: init.sql
-          {{- end }}
           {{- end }}
           livenessProbe:
             httpGet:
@@ -81,23 +81,26 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
-      {{- if or .Values.config.user_csv .Values.config.init_sql (or .Values.config.app_conf (not .Values.config.autoCreateSecret)) }}
       volumes:
-      - name: prometheus-alert-center-conf
-        configMap:
-          name: {{ template "prometheusalert.fullname" . }}
-          items:
-          {{- if .Values.config.user_csv }}
-          - key: user.csv
-            path: user.csv
-          {{- end }}
-          {{- if .Values.config.init_sql }}
-          - key: init.sql
-            path: init.sql
-          {{- end }}
-      {{- if or .Values.config.app_conf (not .Values.config.autoCreateSecret) }}
-      - name: app-conf
-        secret:
-          secretName: {{ include "prometheusalert.appconf.secret" . }}
-      {{- end }}
-      {{- end }}
+        {{- if or .Values.config.user_csv .Values.config.init_sql }}
+        - name: prometheus-alert-center-conf
+          configMap:
+            name: {{ template "prometheusalert.fullname" . }}
+            items:
+              {{- if .Values.config.user_csv }}
+              - key: user.csv
+                path: user.csv
+              {{- end }}
+              {{- if .Values.config.init_sql }}
+              - key: init.sql
+                path: init.sql
+              {{- end }}
+        {{- end }}
+        - name: app-conf
+          secret:
+            secretName: {{ include "prometheusalert.appconf.secret" . }}
+        {{- if .Values.persistence.enabled }}
+        - name: db
+          persistentVolumeClaim:
+            claimName: {{ template "prometheusalert.fullname" . }}
+        {{- end }}
