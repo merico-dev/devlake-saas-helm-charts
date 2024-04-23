@@ -221,7 +221,7 @@ webhook:
 
   certDir: /tmp/certs
 
-  timeoutSeconds: 180
+  timeoutSeconds: 30
   # -- Specifies whether validating webhooks should be created with failurePolicy: Fail or Ignore
   failurePolicy: Fail
   # -- Specifies if webhook pod should use hostNetwork or not.
