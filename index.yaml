@@ -1,5 +1,25 @@
 apiVersion: v1
 entries:
+  external-secrets:
+  - apiVersion: v2
+    appVersion: v0.9.7
+    created: "2024-04-23T08:54:13.010650314Z"
+    description: External secret management for Kubernetes
+    digest: bc766753d981e3418be14e01bec2ecc80a1dc5dd9831b4c89faf61569fe117a2
+    home: https://github.com/external-secrets/external-secrets
+    icon: https://raw.githubusercontent.com/external-secrets/external-secrets/main/assets/eso-logo-large.png
+    keywords:
+    - kubernetes-external-secrets
+    - secrets
+    kubeVersion: '>= 1.19.0-0'
+    maintainers:
+    - email: kellinmcavoy@gmail.com
+      name: mcavoyk
+    name: external-secrets
+    type: application
+    urls:
+    - https://github.com/merico-dev/helm-charts/releases/download/external-secrets-0.9.7/external-secrets-0.9.7.tgz
+    version: 0.9.7
   oauth2-proxy:
   - apiVersion: v2
     appVersion: v7.4.0-amd64
@@ -152,4 +172,4 @@ entries:
     urls:
     - https://github.com/merico-dev/helm-charts/releases/download/prometheusalert-0.1.0/prometheusalert-0.1.0.tgz
     version: 0.1.0
-generated: "2024-01-15T17:32:50.733142581Z"
+generated: "2024-04-23T08:54:13.010675791Z"
